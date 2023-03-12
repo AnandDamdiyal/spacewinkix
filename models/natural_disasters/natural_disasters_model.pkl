@@ -1,0 +1,30 @@
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import pickle
+
+# Load the natural disasters data
+data = pd.read_csv('data/natural_disasters/natural_disasters_data.csv')
+
+# Prepare the data
+X = data.drop(['disaster_type'], axis=1)
+y = data['disaster_type']
+
+# Split the data into training and testing sets
+train_size = int(0.8 * len(X))
+X_train, X_test = X[:train_size], X[train_size:]
+y_train, y_test = y[:train_size], y[train_size:]
+
+# Train a random forest classifier model
+rfc = RandomForestClassifier(n_estimators=100)
+rfc.fit(X_train, y_train)
+
+# Evaluate the model
+y_pred = rfc.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy}")
+
+# Save the model
+with open('models/natural_disasters/natural_disasters_model.pkl', 'wb') as f:
+    pickle.dump(rfc, f)
