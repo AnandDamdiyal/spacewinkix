@@ -1,0 +1,63 @@
+import pandas as pd
+import numpy as np
+import pickle
+
+class RenewableEnergyProductionModel:
+    def __init__(self):
+        # Load the data used for training the model
+        self.data = pd.read_csv("data/renewable_energy_production/renewable_energy_production_data.csv")
+
+        # Preprocess the data
+        self.X_train, self.y_train = self.preprocess_data(self.data)
+
+        # Train the model
+        self.model = self.train_model(self.X_train, self.y_train)
+
+    def predict(self, input_data):
+        # Preprocess the input data
+        input_data_processed = self.preprocess_input(input_data)
+
+        # Use the trained model to make predictions
+        predictions = self.model.predict(input_data_processed)
+
+        # Postprocess the predictions and return them
+        output_data = self.postprocess_output(predictions)
+        return output_data
+
+    def preprocess_data(self, data):
+        # Split the data into input features and output variable
+        X = data.drop(columns=["energy_production"])
+        y = data["energy_production"]
+
+        # Normalize the input features
+        X_norm = (X - X.mean()) / X.std()
+
+        return X_norm, y
+
+    def preprocess_input(self, input_data):
+        # Convert the input data into a DataFrame
+        input_data_df = pd.DataFrame(input_data, index=[0])
+
+        # Normalize the input data using the same scaling as the training data
+        input_data_norm = (input_data_df - self.data.drop(columns=["energy_production"]).mean()) / self.data.drop(columns=["energy_production"]).std()
+
+        return input_data_norm
+
+    def postprocess_output(self, predictions):
+        # Postprocess the predictions to convert them to the appropriate output format
+        output_data = predictions[0]
+
+        return output_data
+
+    def train_model(self, X_train, y_train):
+        # Train a linear regression model on the preprocessed data
+        from sklearn.linear_model import LinearRegression
+
+        model = LinearRegression()
+        model.fit(X_train, y_train)
+
+        # Save the trained model to disk
+        with open("models/renewable_energy_production/renewable_energy_production_model.pkl", "wb") as f:
+            pickle.dump(model, f)
+
+        return model
